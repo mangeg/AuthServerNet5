@@ -6,11 +6,16 @@
 
     public class HomeController : Controller
     {
-        [Authorize]
         public IActionResult Index()
         {
+            return View();
+        }
+
+        [Authorize]
+        public IActionResult Claims()
+        {
             var claims = User.Claims;
-            
+
             return View( claims );
         }
     }
