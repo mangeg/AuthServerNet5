@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Threading.Tasks;
     using Config;
     using Microsoft.AspNet.Builder;
@@ -12,7 +13,7 @@
     using Microsoft.Framework.Configuration;
     using Microsoft.Framework.DependencyInjection;
     using Microsoft.Framework.Logging;
-    using Microsoft.Framework.OptionsModel;
+    using Microsoft.Framework.Logging.Console;
     using Microsoft.Framework.Runtime;
     using Microsoft.Owin.Builder;
     using Owin;
@@ -26,6 +27,7 @@
 
         public Startup( IHostingEnvironment env, IApplicationEnvironment appEnv )
         {
+            Trace.WriteLine( "In startup" );
             var config = new ConfigurationBuilder( appEnv.ApplicationBasePath )
                 .AddJsonFile( "config.json" )
                 .AddJsonFile( $"config.{env.EnvironmentName}.json", true );
@@ -45,60 +47,74 @@
             services.AddTransient<CertificateService>();
         }
 
-        public void Configure( IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerfactory, IApplicationEnvironment appEnv )
+        public void Configure( IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerfactory )
         {
             loggerfactory.AddConsole( LogLevel.Information );
+            loggerfactory.AddTraceLogger( LogLevel.Information );
 
-            if ( env.IsDevelopment() )
+            var configLogger = loggerfactory.CreateLogger( "Config" );
+
+            //if ( env.IsDevelopment() )
             {
                 app.UseErrorPage( ErrorPageOptions.ShowAll );
             }
 
-            app.Map( "/identity",
-                identity => {
-
+            app.Map(
+                "/identity",
+                identity =>
+                {
                     var factory = InMemoryFactory.Create(
-                                users: Users.Get(),
-                                clients: Clients.Get(),
-                                scopes: Scopes.Get() );
+                        users: Users.Get(),
+                        clients: Clients.Get(),
+                        scopes: Scopes.Get() );
 
-                    identity.UseOwin( addToPipeline => {
-                        addToPipeline( next => {
-                            var builder = new AppBuilder();
+                    identity.UseOwin(
+                        addToPipeline =>
+                        {
+                            addToPipeline(
+                                next =>
+                                {
+                                    var builder = new AppBuilder();
 
-                            var provider = app.ApplicationServices.GetService<IDataProtectionProvider>();
-                            builder.Properties["security.DataProtectionProvider"] = new DataProtectionProviderDelegate( purposes =>
-                            {
-                                var dataProtection = provider.CreateProtector( string.Join( ",", purposes ) );
-                                return new DataProtectionTuple( dataProtection.Protect, dataProtection.Unprotect );
-                            } );
+                                    var provider = app.ApplicationServices.GetService<IDataProtectionProvider>();
+                                    builder.Properties["security.DataProtectionProvider"] = new DataProtectionProviderDelegate(
+                                        purposes =>
+                                        {
+                                            var dataProtection = provider.CreateProtector( string.Join( ",", purposes ) );
+                                            return new DataProtectionTuple( dataProtection.Protect, dataProtection.Unprotect );
+                                        } );
 
-                            var signCert = app.ApplicationServices.GetService<CertificateService>().Get();
-                            var serverOptions = new IdentityServerOptions
-                            {
-                                Factory = factory,
-                                SiteName = "Scancloud Auth Server",
-                                SigningCertificate = signCert,
-                            };
 
-                            if ( env.IsDevelopment() )
-                            {
-                                serverOptions.RequireSsl = false;
-                            }
+                                    configLogger.LogInformation( "Getting certificate" );
+                                    var signCert = app.ApplicationServices.GetService<CertificateService>().Get();
+                                    var serverOptions = new IdentityServerOptions {
+                                        Factory = factory,
+                                        SiteName = "Scancloud Auth Server",
+                                        SigningCertificate = signCert,
+                                    };
 
-                            builder.UseIdentityServer( serverOptions );
+                                    if ( env.IsDevelopment() )
+                                    {
+                                        serverOptions.RequireSsl = false;
+                                    }
 
-                            var appFunc = builder.Build( typeof(Func<IDictionary<string, object>, Task>) ) as Func<IDictionary<string, object>, Task>;
+                                    builder.UseIdentityServer( serverOptions );
 
-                            return appFunc;
+                                    var appFunc =
+                                        builder.Build( typeof( Func<IDictionary<string, object>, Task> ) ) as
+                                            Func<IDictionary<string, object>, Task>;
+
+                                    return appFunc;
+                                } );
                         } );
-                    } );
                 } );
 
-            app.Run( async ( context ) => {
-                var text = Configuration.Get( "Text" );
-                await context.Response.WriteAsync( $"Hello World! {text}" );
-            } );
+            app.Run(
+                async ( context ) =>
+                {
+                    var text = Configuration.Get( "Text" );
+                    await context.Response.WriteAsync( $"Hello World! {text}" );
+                } );
         }
     }
 }

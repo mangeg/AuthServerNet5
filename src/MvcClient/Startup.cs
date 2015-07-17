@@ -1,7 +1,9 @@
 ﻿namespace MvcClient
 {
     using System;
+    using System.Collections.Generic;
     using System.Diagnostics;
+    using System.IdentityModel.Tokens;
     using System.Security.Cryptography.X509Certificates;
     using System.Text;
     using System.Threading.Tasks;
@@ -9,7 +11,9 @@
     using Microsoft.AspNet.Authentication.Cookies;
     using Microsoft.AspNet.Authentication.OpenIdConnect;
     using Microsoft.AspNet.Builder;
+    using Microsoft.AspNet.Diagnostics;
     using Microsoft.Framework.DependencyInjection;
+    using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
 
     public class Startup
@@ -19,18 +23,22 @@
         {
             services.AddMvc().ConfigureMvc( mvcOpts => { } );
 
-            services.Configure<ExternalAuthenticationOptions>( options =>
+            /*services.Configure<ExternalAuthenticationOptions>( options =>
             {
                 options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-            } );
+            } );*/
         }
 
         public void Configure( IApplicationBuilder app )
         {
+            JwtSecurityTokenHandler.InboundClaimTypeMap = new Dictionary<string, string>();
+
             app.UseCookieAuthentication( options =>
             {
                 options.AutomaticAuthentication = true;
             } );
+
+            app.UseErrorPage( ErrorPageOptions.ShowAll );
 
             app.UseOpenIdConnectAuthentication(
                 o =>
@@ -46,30 +54,23 @@
                     o.Notifications = new OpenIdConnectAuthenticationNotifications {
                         SecurityTokenValidated = n =>
                         {
-                            var sToken = new System.IdentityModel.Tokens.JwtSecurityTokenHandler().ReadToken( n.ProtocolMessage.IdToken );
 
-                            var parts = n.ProtocolMessage.IdToken.Split( '.' );
-                            var header = Uri.UnescapeDataString( parts[0] );
-                            var claims = Uri.UnescapeDataString( parts[1] );
-                            var signature = Uri.UnescapeDataString( parts[2] );
-                            var signatureCert = new X509Certificate2( Base64Url.Decode( signature ) );
-                            var headerJ = JObject.Parse( Encoding.UTF8.GetString( Convert.FromBase64String( header ) ) );
-                            var claimsJ = JObject.Parse( Encoding.UTF8.GetString( Convert.FromBase64String( claims ) ) );
-                            Trace.WriteLine( "Id token:" );
-                            Trace.WriteLine( headerJ );
-                            Trace.WriteLine( claimsJ );
 
-                            parts = n.ProtocolMessage.AccessToken.Split( '.' );
-                            header = Uri.UnescapeDataString( parts[0] );
-                            claims = Uri.UnescapeDataString( parts[1] );
-                            signature = Uri.UnescapeDataString( parts[2] );
-                            signatureCert =
-                                new X509Certificate2( Convert.FromBase64String( signature.Replace( "_", "/" ).Replace( "-", "+" ) ) );
-                            headerJ = JObject.Parse( Encoding.UTF8.GetString( Convert.FromBase64String( header ) ) );
-                            claimsJ = JObject.Parse( Encoding.UTF8.GetString( Convert.FromBase64String( claims ) ) );
-                            Trace.WriteLine( "Access token:" );
-                            Trace.WriteLine( headerJ );
-                            Trace.WriteLine( claimsJ );
+                            if ( !string.IsNullOrEmpty( n.ProtocolMessage.IdToken ) )
+                            {
+                                var sToken = (JwtSecurityToken)new JwtSecurityTokenHandler().ReadToken( n.ProtocolMessage.IdToken );
+                                Trace.WriteLine( "ID Token:" );
+                                Trace.WriteLine( JToken.Parse( sToken.Header.SerializeToJson() ) );
+                                Trace.WriteLine( JToken.Parse( sToken.Payload.SerializeToJson() ) );
+                            }
+                            if ( !string.IsNullOrEmpty( n.ProtocolMessage.AccessToken ) )
+                            {
+                                var sToken = (JwtSecurityToken)new JwtSecurityTokenHandler().ReadToken( n.ProtocolMessage.AccessToken );
+                                Trace.WriteLine( "Access Token:" );
+                                Trace.WriteLine( JToken.Parse( sToken.Header.SerializeToJson() ) );
+                                Trace.WriteLine( JToken.Parse( sToken.Payload.SerializeToJson() ) );
+                            }
+
                             return Task.FromResult( 0 );
                         },
                         AuthorizationCodeReceived = n =>

@@ -190,4 +190,5 @@ _Pvt_Extensions/
 ModelManifest.xml
 
 # Custom
-**/.vs
+.vs
+PublishProfiles
