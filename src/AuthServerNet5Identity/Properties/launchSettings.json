@@ -10,7 +10,7 @@
     "web": {
       "commandName": "web",
       "launchBrowser": true,
-      "launchUrl": "https://as.local",
+      "launchUrl": "https://login.local",
       "environmentVariables": {
         "ASPNET_ENV": "Development"
       }

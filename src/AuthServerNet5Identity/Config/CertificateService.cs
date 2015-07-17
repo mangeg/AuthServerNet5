@@ -1,16 +1,20 @@
 namespace AuthServerNet5Identity.Config
 {
+    using System.IO;
     using System.Security.Cryptography.X509Certificates;
     using Microsoft.Framework.Configuration;
     using Microsoft.Framework.Logging;
+    using Microsoft.Framework.Runtime;
 
-    public class CertificateService
+    public class CertificateService : ICertificateService
     {
         private readonly IConfiguration _config;
-        private ILogger _logger;
-        public CertificateService( IConfiguration config, ILoggerFactory loggerFactory )
+        private readonly IApplicationEnvironment _appEnv;
+        private readonly ILogger _logger;
+        public CertificateService( IConfiguration config, ILoggerFactory loggerFactory, IApplicationEnvironment appEnv )
         {
             _config = config;
+            _appEnv = appEnv;
             _logger = loggerFactory.CreateLogger<CertificateService>();
         }
 
@@ -19,10 +23,12 @@ namespace AuthServerNet5Identity.Config
             var path = _config.Get( "SignatureCert:Path" );
             var password = _config.Get( "SignatureCert:Password" );
 
-            _logger.LogInformation( $"Path: {path}" );
-            _logger.LogInformation( $"Password: {password}" );
+            var fullPath = Path.Combine( _appEnv.ApplicationBasePath, path );
 
-            return new X509Certificate2( path, password );
+            _logger.LogInformation( $"Certificate Path: {fullPath}" );
+            _logger.LogInformation( $"Certificate Password: {password}" );
+
+            return new X509Certificate2( fullPath, password );
         }
     }
 }

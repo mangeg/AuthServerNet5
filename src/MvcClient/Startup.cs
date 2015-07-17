@@ -12,7 +12,9 @@
     using Microsoft.AspNet.Authentication.OpenIdConnect;
     using Microsoft.AspNet.Builder;
     using Microsoft.AspNet.Diagnostics;
+    using Microsoft.AspNet.Hosting;
     using Microsoft.Framework.DependencyInjection;
+    using Microsoft.Framework.Runtime;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
 
@@ -29,7 +31,7 @@
             } );*/
         }
 
-        public void Configure( IApplicationBuilder app )
+        public void Configure( IApplicationBuilder app, IHostingEnvironment env, IApplicationEnvironment appEnv )
         {
             JwtSecurityTokenHandler.InboundClaimTypeMap = new Dictionary<string, string>();
 
@@ -38,13 +40,16 @@
                 options.AutomaticAuthentication = true;
             } );
 
-            app.UseErrorPage( ErrorPageOptions.ShowAll );
+            if ( env.IsDevelopment() )
+            {
+                app.UseErrorPage( ErrorPageOptions.ShowAll );
+            }
 
             app.UseOpenIdConnectAuthentication(
                 o =>
                 {
                     o.AutomaticAuthentication = true;
-                    o.Authority = "https://as.local/identity";
+                    o.Authority = "https://login.local/identity";
                     o.ClientId = "mvc6Hybrid";
                     o.RedirectUri = "http://localhost:14567/";
                     o.ResponseType = "code id_token token";
@@ -54,8 +59,6 @@
                     o.Notifications = new OpenIdConnectAuthenticationNotifications {
                         SecurityTokenValidated = n =>
                         {
-
-
                             if ( !string.IsNullOrEmpty( n.ProtocolMessage.IdToken ) )
                             {
                                 var sToken = (JwtSecurityToken)new JwtSecurityTokenHandler().ReadToken( n.ProtocolMessage.IdToken );
@@ -82,6 +85,10 @@
                             return Task.FromResult( 0 );
                         },
                         SecurityTokenReceived = n =>
+                        {
+                            return Task.FromResult( 0 );
+                        },
+                        RedirectToIdentityProvider = n => 
                         {
                             return Task.FromResult( 0 );
                         }
