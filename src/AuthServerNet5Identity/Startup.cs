@@ -7,6 +7,7 @@
     using Microsoft.AspNet.Builder;
     using Microsoft.AspNet.Diagnostics;
     using Microsoft.AspNet.Hosting;
+    using Microsoft.AspNet.Http;
     using Microsoft.AspNet.Identity;
     using Microsoft.Data.Entity;
     using Microsoft.Framework.Configuration;
@@ -18,6 +19,7 @@
     using Thinktecture.IdentityServer.Core.Configuration;
     using Thinktecture.IdentityServer.Core.Services;
     using Thinktecture.IdentityServer.Core.Services.InMemory;
+    using Utils;
 
     public class Startup
     {
@@ -63,10 +65,10 @@
                 .AddEntityFrameworkStores<UserContext, int>()
                 .AddDefaultTokenProviders();
             services.AddTransient(
-                p => new UserService<ApplicationUser, int>( p.GetRequiredService<UserManager<ApplicationUser>>() ) {                    
+                p => new ApplicationUserService( p.GetRequiredService<UserManager<ApplicationUser>>() ) {                    
                 } );
             services.AddTransient(
-                p => new SimpleIdentityManagerService<ApplicationUser, int, ApplicationRole, int>(
+                p => new ApplicationIdentityManagerService(
                     p.GetRequiredService<UserManager<ApplicationUser>>(),
                     p.GetRequiredService<RoleManager<ApplicationRole>>(),
                     p.GetRequiredService<IOptions<IdentityOptions>>()
@@ -96,7 +98,7 @@
                     factory.ClientStore = new Registration<IClientStore>( clientStore );
                     factory.Register( new Registration<IServiceProvider>( resolver => app.ApplicationServices ) );
                     factory.UserService =
-                        new Registration<IUserService>( resolver => app.ApplicationServices.GetRequiredService<UserService<ApplicationUser, int>>() ) { };
+                        new Registration<IUserService>( resolver => app.ApplicationServices.GetRequiredService<ApplicationUserService>() );
 
                     var signCert = app.ApplicationServices.GetRequiredService<ICertificateService>().Get();
 
@@ -117,8 +119,7 @@
                     var factory = new Thinktecture.IdentityManager.Configuration.IdentityManagerServiceFactory();
                     factory.IdentityManagerService = new Thinktecture.IdentityManager.Configuration.Registration<IIdentityManagerService>(
                         resolver =>
-                            app.ApplicationServices.GetRequiredService<SimpleIdentityManagerService<ApplicationUser, int, ApplicationRole, int>>(
-                                ) );
+                            app.ApplicationServices.GetRequiredService<ApplicationIdentityManagerService>() );
                     admin.UseIdentityManager(
                         new Thinktecture.IdentityManager.Configuration.IdentityManagerOptions {
                             Factory = factory,
@@ -130,8 +131,9 @@
             app.Run(
                 h =>
                 {
-                    h.Response.Redirect( "/admin" );
-                    h.Response.StatusCode = 301;
+                    ///h.Response.Redirect( "/admin" );
+                    //h.Response.StatusCode = 301;
+                    h.Response.WriteAsync( "In Root" );
                     return Task.FromResult( 0 );
                 } );
         }

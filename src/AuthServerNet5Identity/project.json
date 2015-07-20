@@ -25,7 +25,7 @@
 
     "commands": {
         "web": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.urls http://login.local:80;https://login.local:443",
-        "ef": "EntityFramework.Commands"
+        "ef": "EntityFramework.Commands"        
     },
 
     "exclude": [

@@ -1,20 +1,20 @@
-﻿namespace AuthServerNet5Identity.Identity
+﻿namespace AuthServerNet5Identity.Utils
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Security.Claims;
     using System.Threading.Tasks;
     using Microsoft.AspNet.Identity;
+    using Microsoft.AspNet.Identity.EntityFramework;
+    using Thinktecture.IdentityModel;
+    using Thinktecture.IdentityServer.Core.Extensions;
     using Thinktecture.IdentityServer.Core.Models;
     using Thinktecture.IdentityServer.Core.Services;
-    using Thinktecture.IdentityServer.Core.Extensions;
-    using System.Linq;
-    using Microsoft.AspNet.Identity.EntityFramework;
-    using Microsoft.Framework.DependencyInjection;
-    using Thinktecture.IdentityModel;
 
-    public class UserService<TUser, TKey> : IUserService 
-        where TUser : IdentityUser<TKey>, new() where TKey : IEquatable<TKey>
+    public class UserService<TUser, TKey> : IUserService
+        where TUser : IdentityUser<TKey>, new() 
+        where TKey : IEquatable<TKey>
     {
         public string DisplayNameClaimType { get; set; }
         public bool EnableSecurityStamp { get; set; }
@@ -84,7 +84,8 @@
             }
             else
             {
-                return await ProcessExistingExternalAccountAsync( user, externalUser.Provider, externalUser.ProviderId, externalUser.Claims );
+                return
+                    await ProcessExistingExternalAccountAsync( user, externalUser.Provider, externalUser.ProviderId, externalUser.Claims );
             }
         }
         public Task SignOutAsync( ClaimsPrincipal subject )
@@ -140,7 +141,7 @@
         }
 
         //////////////////////////
-        protected async virtual Task<TUser> FindUserAsync( string username )
+        protected virtual async Task<TUser> FindUserAsync( string username )
         {
             return await UserManager.FindByNameAsync( username );
         }
@@ -173,7 +174,8 @@
             {
                 nameClaim = claims.FirstOrDefault( x => x.Type == DisplayNameClaimType );
             }
-            if ( nameClaim == null ) nameClaim = claims.FirstOrDefault( x => x.Type == Thinktecture.IdentityServer.Core.Constants.ClaimTypes.Name );
+            if ( nameClaim == null )
+                nameClaim = claims.FirstOrDefault( x => x.Type == Thinktecture.IdentityServer.Core.Constants.ClaimTypes.Name );
             if ( nameClaim == null ) nameClaim = claims.FirstOrDefault( x => x.Type == ClaimTypes.Name );
             if ( nameClaim != null ) return nameClaim.Value;
 
@@ -182,9 +184,10 @@
 
         protected virtual async Task<IEnumerable<Claim>> GetClaimsFromAccount( TUser user )
         {
-            var claims = new List<Claim>{
-                new Claim(Thinktecture.IdentityServer.Core.Constants.ClaimTypes.Subject, user.Id.ToString()),
-                new Claim(Thinktecture.IdentityServer.Core.Constants.ClaimTypes.PreferredUserName, user.UserName),
+            var claims = new List<Claim>
+            {
+                new Claim( Thinktecture.IdentityServer.Core.Constants.ClaimTypes.Subject, user.Id.ToString() ),
+                new Claim( Thinktecture.IdentityServer.Core.Constants.ClaimTypes.PreferredUserName, user.UserName ),
             };
 
             if ( UserManager.SupportsUserEmail )
@@ -205,7 +208,8 @@
                 {
                     claims.Add( new Claim( Thinktecture.IdentityServer.Core.Constants.ClaimTypes.PhoneNumber, phone ) );
                     var verified = await UserManager.IsPhoneNumberConfirmedAsync( user );
-                    claims.Add( new Claim( Thinktecture.IdentityServer.Core.Constants.ClaimTypes.PhoneNumberVerified, verified ? "true" : "false" ) );
+                    claims.Add( new Claim( Thinktecture.IdentityServer.Core.Constants.ClaimTypes.PhoneNumberVerified,
+                        verified ? "true" : "false" ) );
                 }
             }
 
@@ -225,7 +229,10 @@
             return claims;
         }
 
-        protected virtual async Task<AuthenticateResult> ProcessNewExternalAccountAsync( string provider, string providerId, IList<Claim> claims )
+        protected virtual async Task<AuthenticateResult> ProcessNewExternalAccountAsync(
+            string provider,
+            string providerId,
+            IList<Claim> claims )
         {
             var user = await InstantiateNewUserFromExternalProviderAsync( provider, providerId, claims );
             if ( user == null ) throw new InvalidOperationException( "CreateNewAccountFromExternalProvider returned null" );
@@ -249,13 +256,20 @@
             return await SignInFromExternalProviderAsync( user, provider );
         }
 
-        protected virtual Task<TUser> InstantiateNewUserFromExternalProviderAsync( string provider, string providerId, IEnumerable<Claim> claims )
+        protected virtual Task<TUser> InstantiateNewUserFromExternalProviderAsync(
+            string provider,
+            string providerId,
+            IEnumerable<Claim> claims )
         {
             var user = new TUser { UserName = Guid.NewGuid().ToString( "N" ) };
             return Task.FromResult( user );
         }
 
-        protected virtual async Task<AuthenticateResult> AccountCreatedFromExternalProviderAsync( TUser user, string provider, string providerId, IList<Claim> claims )
+        protected virtual async Task<AuthenticateResult> AccountCreatedFromExternalProviderAsync(
+            TUser user,
+            string provider,
+            string providerId,
+            IList<Claim> claims )
         {
             claims = ( await SetAccountEmailAsync( user, claims ) ).ToList();
             claims = ( await SetAccountPhoneAsync( user, claims ) ).ToList();
@@ -263,7 +277,11 @@
             return await UpdateAccountFromExternalClaimsAsync( user, provider, providerId, claims );
         }
 
-        protected virtual async Task<AuthenticateResult> UpdateAccountFromExternalClaimsAsync( TUser user, string provider, string providerId, IList<Claim> claims )
+        protected virtual async Task<AuthenticateResult> UpdateAccountFromExternalClaimsAsync(
+            TUser user,
+            string provider,
+            string providerId,
+            IList<Claim> claims )
         {
             var existingClaims = await UserManager.GetClaimsAsync( user );
             var intersection = existingClaims.Intersect( claims, new ClaimComparer() );
@@ -294,14 +312,19 @@
                     var result = await UserManager.SetEmailAsync( user, email.Value );
                     if ( result.Succeeded )
                     {
-                        var emailVerified = claims.FirstOrDefault( x => x.Type == Thinktecture.IdentityServer.Core.Constants.ClaimTypes.EmailVerified );
+                        var emailVerified =
+                            claims.FirstOrDefault( x => x.Type == Thinktecture.IdentityServer.Core.Constants.ClaimTypes.EmailVerified );
                         if ( emailVerified != null && emailVerified.Value == "true" )
                         {
                             var token = await UserManager.GenerateEmailConfirmationTokenAsync( user );
                             await UserManager.ConfirmEmailAsync( user, token );
                         }
 
-                        var emailClaims = new[] { Thinktecture.IdentityServer.Core.Constants.ClaimTypes.Email, Thinktecture.IdentityServer.Core.Constants.ClaimTypes.EmailVerified };
+                        var emailClaims = new[]
+                        {
+                            Thinktecture.IdentityServer.Core.Constants.ClaimTypes.Email,
+                            Thinktecture.IdentityServer.Core.Constants.ClaimTypes.EmailVerified
+                        };
                         return claims.Where( x => !emailClaims.Contains( x.Type ) );
                     }
                 }
@@ -323,14 +346,19 @@
                     var result = await UserManager.SetPhoneNumberAsync( user, phone.Value );
                     if ( result.Succeeded )
                     {
-                        var phoneVerified = claims.FirstOrDefault( x => x.Type == Thinktecture.IdentityServer.Core.Constants.ClaimTypes.PhoneNumberVerified );
+                        var phoneVerified =
+                            claims.FirstOrDefault( x => x.Type == Thinktecture.IdentityServer.Core.Constants.ClaimTypes.PhoneNumberVerified );
                         if ( phoneVerified != null && phoneVerified.Value == "true" )
                         {
                             var token = await UserManager.GenerateChangePhoneNumberTokenAsync( user, phone.Value );
                             await UserManager.ChangePhoneNumberAsync( user, phone.Value, token );
                         }
 
-                        var phoneClaims = new[] { Thinktecture.IdentityServer.Core.Constants.ClaimTypes.PhoneNumber, Thinktecture.IdentityServer.Core.Constants.ClaimTypes.PhoneNumberVerified };
+                        var phoneClaims = new[]
+                        {
+                            Thinktecture.IdentityServer.Core.Constants.ClaimTypes.PhoneNumber,
+                            Thinktecture.IdentityServer.Core.Constants.ClaimTypes.PhoneNumberVerified
+                        };
                         return claims.Where( x => !phoneClaims.Contains( x.Type ) );
                     }
                 }
@@ -351,7 +379,11 @@
                 identityProvider: provider );
         }
 
-        protected virtual async Task<AuthenticateResult> ProcessExistingExternalAccountAsync( TUser user, string provider, string providerId, IEnumerable<Claim> claims )
+        protected virtual async Task<AuthenticateResult> ProcessExistingExternalAccountAsync(
+            TUser user,
+            string provider,
+            string providerId,
+            IEnumerable<Claim> claims )
         {
             return await SignInFromExternalProviderAsync( user, provider );
         }

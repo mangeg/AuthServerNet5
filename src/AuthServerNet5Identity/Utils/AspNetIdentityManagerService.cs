@@ -2,19 +2,16 @@ namespace AuthServerNet5Identity.Config
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Threading.Tasks;
-    using Identity;
     using Microsoft.AspNet.Identity;
     using Microsoft.AspNet.Identity.EntityFramework;
-    using Microsoft.Framework.DependencyInjection;
-    using Thinktecture.IdentityManager;
-    using Thinktecture.IdentityManager.Configuration;
-    using System.Linq;
     using Microsoft.Framework.OptionsModel;
+    using Thinktecture.IdentityManager;
 
-    public class SimpleIdentityManagerService<TUser, TUserKey, TRole, TRoleKey> : IIdentityManagerService
+    public class AspNetIdentityManagerService<TUser, TUserKey, TRole, TRoleKey> : IIdentityManagerService
         where TUser : IdentityUser<TUserKey>, new()
-        where TUserKey : IEquatable<TUserKey>
+        where TUserKey: IEquatable<TUserKey>
         where TRole : IdentityRole<TRoleKey>, new()
         where TRoleKey : IEquatable<TRoleKey>
     {
@@ -24,7 +21,7 @@ namespace AuthServerNet5Identity.Config
         private readonly RoleManager<TRole> _roleManager;
         private readonly Func<Task<IdentityManagerMetadata>> _metadataFunc;
 
-        private SimpleIdentityManagerService(
+        private AspNetIdentityManagerService(
             UserManager<TUser> userMgr,
             RoleManager<TRole> roleMgr )
         {
@@ -47,10 +44,10 @@ namespace AuthServerNet5Identity.Config
             RoleClaimType = Constants.ClaimTypes.Role;
         }
 
-        public SimpleIdentityManagerService(
+        public AspNetIdentityManagerService(
             UserManager<TUser> userManager,
             RoleManager<TRole> roleManager,
-            IOptions<IdentityOptions> userOptions, 
+            IOptions<IdentityOptions> userOptions,
             bool includeAccountProperties = true )
             : this( userManager, roleManager )
         {
@@ -58,13 +55,15 @@ namespace AuthServerNet5Identity.Config
             _metadataFunc = () => Task.FromResult( GetStandardMetadata( includeAccountProperties ) );
         }
 
-        public SimpleIdentityManagerService(
+        public AspNetIdentityManagerService(
             UserManager<TUser> userManager,
             RoleManager<TRole> roleManager,
             IdentityManagerMetadata metadata )
-            : this( userManager, roleManager, () => Task.FromResult( metadata ) ) {}
+            : this( userManager, roleManager, () => Task.FromResult( metadata ) )
+        {
+        }
 
-        public SimpleIdentityManagerService(
+        public AspNetIdentityManagerService(
             UserManager<TUser> userManager,
             RoleManager<TRole> roleManager,
             Func<Task<IdentityManagerMetadata>> metadataFunc )
@@ -145,7 +144,8 @@ namespace AuthServerNet5Identity.Config
             int total = query.Count();
             var users = query.Skip( start ).Take( count ).ToArray();
 
-            var result = new QueryResult<UserSummary> {
+            var result = new QueryResult<UserSummary>
+            {
                 Start = start,
                 Count = count,
                 Total = total,
@@ -306,7 +306,7 @@ namespace AuthServerNet5Identity.Config
         public async Task<IdentityManagerResult> DeleteRoleAsync( string subject )
         {
             ValidateSupportsRoles();
-            
+
             var role = await _roleManager.FindByIdAsync( subject );
             if ( role == null )
             {
@@ -345,15 +345,16 @@ namespace AuthServerNet5Identity.Config
             int total = query.Count();
             var roles = query.Skip( start ).Take( count ).ToArray();
 
-            var result = new QueryResult<RoleSummary> {
+            var result = new QueryResult<RoleSummary>
+            {
                 Start = start,
                 Count = count,
                 Total = total,
                 Filter = filter,
                 Items = roles.Select(
-                    x =>
-                    {
-                        var user = new RoleSummary {
+                    x => {
+                        var user = new RoleSummary
+                        {
                             Subject = x.Id.ToString(),
                             Name = x.Name
                             // Description
@@ -368,7 +369,7 @@ namespace AuthServerNet5Identity.Config
         public async Task<IdentityManagerResult<RoleDetail>> GetRoleAsync( string subject )
         {
             ValidateSupportsRoles();
-            
+
             var role = await _roleManager.FindByIdAsync( subject );
             if ( role == null )
             {
@@ -494,7 +495,8 @@ namespace AuthServerNet5Identity.Config
                 update.AddRange( PropertyMetadata.FromType<TUser>( new string[] { } ) );
             }
 
-            var create = new List<PropertyMetadata> {
+            var create = new List<PropertyMetadata>
+            {
                 PropertyMetadata.FromProperty<TUser>( x => x.UserName, type: Constants.ClaimTypes.Username, required: true ),
                 PropertyMetadata.FromFunctions<TUser, string>(
                     Constants.ClaimTypes.Password,
@@ -509,7 +511,8 @@ namespace AuthServerNet5Identity.Config
                 create.Add( PropertyMetadata.FromProperty<TUser>( x => x.Email, type: Constants.ClaimTypes.Email, required: true ) );
             }
 
-            var user = new UserMetadata {
+            var user = new UserMetadata
+            {
                 SupportsCreate = true,
                 SupportsDelete = true,
                 SupportsClaims = _userManager.SupportsUserClaim,
@@ -517,17 +520,20 @@ namespace AuthServerNet5Identity.Config
                 UpdateProperties = update
             };
 
-            var role = new RoleMetadata {
+            var role = new RoleMetadata
+            {
                 RoleClaimType = RoleClaimType,
                 SupportsCreate = true,
                 SupportsDelete = true,
-                CreateProperties = new[] {
+                CreateProperties = new[]
+                {
                     PropertyMetadata.FromProperty<TRole>( x => x.Name, type: Constants.ClaimTypes.Name, required: true )
                 },
                 UpdateProperties = PropertyMetadata.FromType<TRole>( new string[] { } )
             };
 
-            var meta = new IdentityManagerMetadata {
+            var meta = new IdentityManagerMetadata
+            {
                 UserMetadata = user,
                 RoleMetadata = role
             };
@@ -548,7 +554,11 @@ namespace AuthServerNet5Identity.Config
             return null;
         }
 
-        protected virtual IdentityManagerResult SetUserProperty( IEnumerable<PropertyMetadata> propsMeta, TUser user, string type, string value )
+        protected virtual IdentityManagerResult SetUserProperty(
+            IEnumerable<PropertyMetadata> propsMeta,
+            TUser user,
+            string type,
+            string value )
         {
             IdentityManagerResult result;
             if ( propsMeta.TrySet( user, type, value, out result ) )
@@ -569,7 +579,11 @@ namespace AuthServerNet5Identity.Config
             throw new Exception( "Invalid property type " + propMetadata.Type );
         }
 
-        protected virtual IdentityManagerResult SetRoleProperty( IEnumerable<PropertyMetadata> propsMeta, TRole role, string type, string value )
+        protected virtual IdentityManagerResult SetRoleProperty(
+            IEnumerable<PropertyMetadata> propsMeta,
+            TRole role,
+            string type,
+            string value )
         {
             IdentityManagerResult result;
             if ( propsMeta.TrySet( role, type, value, out result ) )
@@ -722,6 +736,5 @@ namespace AuthServerNet5Identity.Config
         {
             return Enumerable.Empty<string>();
         }
-
     }
 }
