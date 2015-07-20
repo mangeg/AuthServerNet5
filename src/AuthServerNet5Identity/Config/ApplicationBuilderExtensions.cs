@@ -1,4 +1,4 @@
-namespace AuthServerNet5Identity
+namespace AuthServerNet5Identity.Config
 {
     using System;
     using System.Collections.Generic;
@@ -8,6 +8,7 @@ namespace AuthServerNet5Identity
     using Microsoft.Framework.DependencyInjection;
     using Microsoft.Owin.Builder;
     using Owin;
+    using Thinktecture.IdentityManager.Configuration;
     using Thinktecture.IdentityServer.Core.Configuration;
 
     using DataProtectionProviderDelegate = System.Func<string[], System.Tuple<System.Func<byte[], byte[]>, System.Func<byte[], byte[]>>>;
@@ -40,6 +41,28 @@ namespace AuthServerNet5Identity
                             return appFunc;
                         } );
                 } );
+        }
+
+        public static void UseIdentityManager( this IApplicationBuilder app, IdentityManagerOptions options )
+        {
+            app.UseOwin(
+                addToPipeline =>
+                {
+                    addToPipeline(
+                        next =>
+                        {
+                            var builder = new AppBuilder();
+
+                            builder.UseIdentityManager( options );
+
+                            var appFunc =
+                                 builder.Build( typeof( Func<IDictionary<string, object>, Task> ) ) as
+                                     Func<IDictionary<string, object>, Task>;
+
+                            return appFunc;
+                        } );
+                }
+                );
         }
     }
 }

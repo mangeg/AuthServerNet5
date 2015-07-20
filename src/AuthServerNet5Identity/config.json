@@ -1,3 +1,8 @@
 ﻿{
-    "Text": "MyText"
+    "Text": "MyText",
+    "Data": {
+        "DefaultConnection": {
+            ConnectionString: "Server=(localdb)\\mssqllocaldb;Database=IdServer;Trusted_Connection=True;MultipleActiveResultSets=true"
+        }
+    }
 }

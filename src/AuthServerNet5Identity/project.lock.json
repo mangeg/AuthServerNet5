@@ -120,6 +120,24 @@
           "lib/net45/EntityFramework.SqlServer.dll": {}
         }
       },
+      "EntityFramework.SqlServer.Design/7.0.0-beta5": {
+        "dependencies": {
+          "EntityFramework.Relational.Design": "7.0.0-beta5",
+          "EntityFramework.SqlServer": "7.0.0-beta5"
+        },
+        "frameworkAssemblies": [
+          "mscorlib",
+          "System",
+          "System.Core",
+          "Microsoft.CSharp"
+        ],
+        "compile": {
+          "lib/net45/EntityFramework.SqlServer.Design.dll": {}
+        },
+        "runtime": {
+          "lib/net45/EntityFramework.SqlServer.Design.dll": {}
+        }
+      },
       "Ix-Async/1.2.3": {
         "frameworkAssemblies": [
           "System",
@@ -1105,6 +1123,28 @@
           "lib/portable-net45+win8/System.Reflection.Metadata.dll": {}
         }
       },
+      "Thinktecture.IdentityManager/1.0.0-pre-10013": {
+        "dependencies": {
+          "Owin": "1.0"
+        },
+        "compile": {
+          "lib/net45/Thinktecture.IdentityManager.dll": {}
+        },
+        "runtime": {
+          "lib/net45/Thinktecture.IdentityManager.dll": {}
+        }
+      },
+      "Thinktecture.IdentityModel.Core/1.4.0": {
+        "frameworkAssemblies": [
+          "System.IdentityModel"
+        ],
+        "compile": {
+          "lib/net45/Thinktecture.IdentityModel.Core.dll": {}
+        },
+        "runtime": {
+          "lib/net45/Thinktecture.IdentityModel.Core.dll": {}
+        }
+      },
       "Thinktecture.IdentityServer3/1.6.2": {
         "dependencies": {
           "Owin": "1.0"
@@ -1202,6 +1242,17 @@
         "lib/dnxcore50/EntityFramework.SqlServer.xml",
         "lib/net45/EntityFramework.SqlServer.dll",
         "lib/net45/EntityFramework.SqlServer.xml"
+      ]
+    },
+    "EntityFramework.SqlServer.Design/7.0.0-beta5": {
+      "serviceable": true,
+      "sha512": "CH7hsR92UqqkAvfcoF9mO66xkdZJLN8HAISUibqYzsMcveaHW/8OdS+a8xjxuasQL4iuZB5Tn/j3LI4cmhWzmQ==",
+      "files": [
+        "EntityFramework.SqlServer.Design.7.0.0-beta5.nupkg",
+        "EntityFramework.SqlServer.Design.7.0.0-beta5.nupkg.sha512",
+        "EntityFramework.SqlServer.Design.nuspec",
+        "lib/net45/EntityFramework.SqlServer.Design.dll",
+        "lib/net45/EntityFramework.SqlServer.Design.xml"
       ]
     },
     "Ix-Async/1.2.3": {
@@ -2056,6 +2107,26 @@
         "lib/portable-net45+win8/System.Reflection.Metadata.xml"
       ]
     },
+    "Thinktecture.IdentityManager/1.0.0-pre-10013": {
+      "sha512": "wvDmWXz+miYihSasJFSYcK9wtHugsOO1M0p1TJlQ/0HSGgdNlQIuEATJiX0VrgdVVCHF68FuqIltujkdvo4Tqw==",
+      "files": [
+        "Thinktecture.IdentityManager.1.0.0-pre-10013.nupkg",
+        "Thinktecture.IdentityManager.1.0.0-pre-10013.nupkg.sha512",
+        "Thinktecture.IdentityManager.nuspec",
+        "lib/net45/Thinktecture.IdentityManager.dll",
+        "lib/net45/Thinktecture.IdentityManager.pdb"
+      ]
+    },
+    "Thinktecture.IdentityModel.Core/1.4.0": {
+      "sha512": "foWdCCB7kJHdRKLwMosgizY50Ors9u2naT9LheD+5yEDrr8j4dXxvnTl0mRMMWwNlqHVVc0KL0asCwY3z6ehrQ==",
+      "files": [
+        "Thinktecture.IdentityModel.Core.1.4.0.nupkg",
+        "Thinktecture.IdentityModel.Core.1.4.0.nupkg.sha512",
+        "Thinktecture.IdentityModel.Core.nuspec",
+        "lib/net45/Thinktecture.IdentityModel.Core.dll",
+        "lib/net45/Thinktecture.IdentityModel.Core.pdb"
+      ]
+    },
     "Thinktecture.IdentityServer3/1.6.2": {
       "sha512": "EIVtrdSJk/yFAZQNCIWRSG+lwkpkdlu1xVOaiNoOuKjbxpv9T46us0HN3WR7a/VEa+SqIBSFaOlOZljXhhZOag==",
       "files": [
@@ -2071,16 +2142,22 @@
   "projectFileDependencyGroups": {
     "": [
       "EntityFramework.Commands >= 7.0.0-beta5",
+      "EntityFramework.SqlServer >= 7.0.0-beta5",
+      "EntityFramework.SqlServer.Design >= 7.0.0-beta5",
+      "Microsoft.AspNet.DataProtection >= 1.0.0-beta5",
+      "Microsoft.AspNet.Diagnostics >= 1.0.0-beta5",
+      "Microsoft.AspNet.Identity >= 3.0.0-beta5",
       "Microsoft.AspNet.Identity.EntityFramework >= 3.0.0-beta5",
+      "Microsoft.AspNet.Owin >= 1.0.0-beta5",
       "Microsoft.AspNet.Server.IIS >= 1.0.0-beta5",
       "Microsoft.AspNet.Server.WebListener >= 1.0.0-beta5",
-      "Microsoft.Framework.Logging.Console >= 1.0.0-beta5",
       "Microsoft.Framework.Configuration.Json >= 1.0.0-beta5",
       "Microsoft.Framework.Configuration.UserSecrets >= 1.0.0-beta5",
-      "Microsoft.AspNet.Diagnostics >= 1.0.0-beta5",
+      "Microsoft.Framework.Logging.Console >= 1.0.0-beta5",
+      "Microsoft.Owin >= 3.0.1",
       "Thinktecture.IdentityServer3 >= 1.6.2",
-      "Microsoft.AspNet.Owin >= 1.0.0-beta5",
-      "Microsoft.Owin >= 3.0.1"
+      "Thinktecture.IdentityManager >= 1.0.0-pre-10013",
+      "Thinktecture.IdentityModel.Core >= 1.4.0"
     ],
     "DNX,Version=v4.5.1": []
   }
