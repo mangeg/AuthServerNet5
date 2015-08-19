@@ -1,26 +1,18 @@
 ﻿namespace MvcClient
 {
-    using System;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.IdentityModel.Tokens;
-    using System.Security.Cryptography.X509Certificates;
-    using System.Text;
     using System.Threading.Tasks;
-    using Microsoft.AspNet.Authentication;
-    using Microsoft.AspNet.Authentication.Cookies;
     using Microsoft.AspNet.Authentication.OpenIdConnect;
     using Microsoft.AspNet.Builder;
-    using Microsoft.AspNet.Diagnostics;
     using Microsoft.AspNet.Hosting;
     using Microsoft.Framework.DependencyInjection;
     using Microsoft.Framework.Runtime;
-    using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
 
     public class Startup
     {
-        // For more information on how to configure your application, visit http://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices( IServiceCollection services )
         {
             services.AddMvc().ConfigureMvc( mvcOpts => { } );
@@ -34,7 +26,7 @@
         public void Configure( IApplicationBuilder app, IHostingEnvironment env, IApplicationEnvironment appEnv )
         {
             JwtSecurityTokenHandler.InboundClaimTypeMap = new Dictionary<string, string>();
-
+            
             app.UseCookieAuthentication( options =>
             {
                 options.AutomaticAuthentication = true;
@@ -42,7 +34,7 @@
 
             if ( env.IsDevelopment() )
             {
-                app.UseErrorPage( ErrorPageOptions.ShowAll );
+                app.UseErrorPage();
             }
 
             app.UseOpenIdConnectAuthentication(
@@ -54,7 +46,6 @@
                     o.RedirectUri = "http://localhost:14567/";
                     o.ResponseType = "code id_token token";
                     o.Scope = "openid email profile";
-
                     o.SignInScheme = "Cookies";
                     o.Notifications = new OpenIdConnectAuthenticationNotifications {
                         SecurityTokenValidated = n =>
@@ -76,22 +67,10 @@
 
                             return Task.FromResult( 0 );
                         },
-                        AuthorizationCodeReceived = n =>
-                        {
-                            return Task.FromResult( 0 );
-                        },
-                        MessageReceived = n =>
-                        {
-                            return Task.FromResult( 0 );
-                        },
-                        SecurityTokenReceived = n =>
-                        {
-                            return Task.FromResult( 0 );
-                        },
-                        RedirectToIdentityProvider = n => 
-                        {
-                            return Task.FromResult( 0 );
-                        }
+                        AuthorizationCodeReceived = n => Task.FromResult( 0 ),
+                        MessageReceived = n => Task.FromResult( 0 ),
+                        SecurityTokenReceived = n => Task.FromResult( 0 ),
+                        RedirectToIdentityProvider = n => Task.FromResult( 0 )
                     };
                 } );
 
@@ -103,37 +82,6 @@
                         "{controller}/{action}/{id?}",
                         new { controller = "Home", action = "Index" } );
                 } );
-        }
-    }
-
-    public static class Base64Url
-    {
-        public static string Encode( byte[] arg )
-        {
-            string s = Convert.ToBase64String( arg ); // Standard base64 encoder
-
-            s = s.Split( '=' )[0]; // Remove any trailing '='s
-            s = s.Replace( '+', '-' ); // 62nd char of encoding
-            s = s.Replace( '/', '_' ); // 63rd char of encoding
-
-            return s;
-        }
-
-        public static byte[] Decode( string arg )
-        {
-            string s = arg;
-            s = s.Replace( '-', '+' ); // 62nd char of encoding
-            s = s.Replace( '_', '/' ); // 63rd char of encoding
-
-            switch ( s.Length % 4 ) // Pad with trailing '='s
-            {
-            case 0: break; // No pad chars in this case
-            case 2: s += "=="; break; // Two pad chars
-            case 3: s += "="; break; // One pad char
-            default: throw new Exception( "Illegal base64url string!" );
-            }
-
-            return Convert.FromBase64String( s ); // Standard base64 decoder
         }
     }
 }

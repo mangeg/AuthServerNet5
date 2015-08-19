@@ -7,6 +7,7 @@ namespace AuthServerNet5Identity.Identity
     {
         public UserContext()
         {
+            //Database.EnsureCreated();
         }
 
         protected override void OnModelCreating( ModelBuilder builder )

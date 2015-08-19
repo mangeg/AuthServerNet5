@@ -4,28 +4,29 @@
     "userSecretsId": "AuthServerNet5Identity",
 
     "dependencies": {
-        "EntityFramework.Commands": "7.0.0-beta5",
-        "EntityFramework.SqlServer": "7.0.0-beta5",
-        "EntityFramework.SqlServer.Design": "7.0.0-beta5",
-        "Microsoft.AspNet.DataProtection": "1.0.0-beta5",
-        "Microsoft.AspNet.Diagnostics": "1.0.0-beta5",
-        "Microsoft.AspNet.Identity": "3.0.0-beta5",
-        "Microsoft.AspNet.Identity.EntityFramework": "3.0.0-beta5",
-        "Microsoft.AspNet.Owin": "1.0.0-beta5",
-        "Microsoft.AspNet.Server.IIS": "1.0.0-beta5",
-        "Microsoft.AspNet.Server.WebListener": "1.0.0-beta5",                
-        "Microsoft.Framework.Configuration.Json": "1.0.0-beta5",
-        "Microsoft.Framework.Configuration.UserSecrets": "1.0.0-beta5",
-        "Microsoft.Framework.Logging.Console": "1.0.0-beta5",
+        "EntityFramework.Commands": "7.0.0-beta6",
+        "EntityFramework.SqlServer": "7.0.0-beta6",
+        "EntityFramework.SqlServer.Design": "7.0.0-beta6",
+        "Microsoft.AspNet.DataProtection": "1.0.0-beta6",
+        "Microsoft.AspNet.Diagnostics": "1.0.0-beta6",
+        "Microsoft.AspNet.Identity": "3.0.0-beta6",
+        "Microsoft.AspNet.Identity.EntityFramework": "3.0.0-beta6",
+        "Microsoft.AspNet.Owin": "1.0.0-beta6",
+        "Microsoft.AspNet.Server.IIS": "1.0.0-beta6",
+        "Microsoft.AspNet.Server.WebListener": "1.0.0-beta6",
+        "Microsoft.Framework.Configuration.Json": "1.0.0-beta6",
+        "Microsoft.Framework.Configuration.UserSecrets": "1.0.0-beta6",
+        "Microsoft.Framework.Logging": "1.0.0-beta6",
+        "Microsoft.Framework.Logging.Console": "1.0.0-beta6",
         "Microsoft.Owin": "3.0.1",
-        "Thinktecture.IdentityServer3": "1.6.2",
         "Thinktecture.IdentityManager": "1.0.0-pre-10013",
-        "Thinktecture.IdentityModel.Core": "1.4.0"
+        "Thinktecture.IdentityModel.Core": "1.4.0",
+        "Thinktecture.IdentityServer3": "1.6.2"
     },
 
     "commands": {
-        "web": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.urls http://login.local:80;https://login.local:443",
-        "ef": "EntityFramework.Commands"        
+        "web": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.urls https://login.local:443",
+        "ef": "EntityFramework.Commands"
     },
 
     "exclude": [
@@ -35,6 +36,8 @@
     ],
     "frameworks": {
         "dnx451": {
+            "dependencies": {
+            }
         }
     },
     "publishExclude": [

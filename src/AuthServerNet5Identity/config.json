@@ -2,7 +2,11 @@
     "Text": "MyText",
     "Data": {
         "DefaultConnection": {
-            ConnectionString: "Server=(localdb)\\mssqllocaldb;Database=IdServer;Trusted_Connection=True;MultipleActiveResultSets=true"
+            ConnectionString1: "Server=(localdb)\\mssqllocaldb;Database=IdServer;Trusted_Connection=True;MultipleActiveResultSets=true",
+            ConnectionString: "Server=localhost;Database=IdServer;Trusted_Connection=True;MultipleActiveResultSets=true"
         }
+    },
+    "SignatureCert": {
+        "Path": "login.local.pfx"
     }
 }

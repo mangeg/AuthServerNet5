@@ -10,10 +10,11 @@
     "web": {
       "commandName": "web",
       "launchBrowser": true,
-      "launchUrl": "https://login.local",
+      "launchUrl": "https://login.local:443",
       "environmentVariables": {
         "ASPNET_ENV": "Development"
-      }
+      },
+      "sdkVersion": "dnx-clr-win-x64.1.0.0-beta6"
     }
   }
 }

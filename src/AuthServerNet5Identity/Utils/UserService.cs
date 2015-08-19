@@ -22,7 +22,6 @@
 
         public UserService( UserManager<TUser> userManager )
         {
-            var use = userManager.FindByNameAsync( "test" ).Result;
             UserManager = userManager;
         }
         public Task<AuthenticateResult> PreAuthenticateAsync( SignInMessage message )
